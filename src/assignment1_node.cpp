@@ -32,20 +32,28 @@ int main(int argc, char **argv) {
 		int input = -1;
 
 		while (!check_input(input, turtles.size())) {
-			std::cout << "Insert the number of the turtle you want to control:" << std::endl;
+			std::cout << "\nInsert what you want to do:" << std::endl;
 			for (int i = 0; i < turtles.size(); ++i) {
-			 	std::cout << i+1 << ". " << turtles[i] << std::endl;;
+			 	std::cout << i+1 << ". Move turtle " << turtles[i] << std::endl;
 			}
+
+			const int quit_option = turtles.size() + 1;
+			std::cout << quit_option << ". QUIT" << std::endl;
+
 			std::cout << ">> "; 
 			std::cin >> input;
+
+			if (input == quit_option) {
+				exit(0);
+			}
+
 			if (!check_input(input, turtles.size())) {
-				std::cout << "Invalid turtle number, try again..." << std::endl;
+				std::cout << "Invalid option number, try again..." << std::endl;
 			}
 		}
 		const int turtle = input - 1;
 
 		float x, y, theta; 
-		std::cout << "Acquiring the velocities\n" << std::endl;
 		std::cout << "Insert the x velocity: ";
 		std::cin >> x;
 		std::cout << "Insert the y velocity: ";
