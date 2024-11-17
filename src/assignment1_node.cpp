@@ -1,18 +1,13 @@
 #include "ros/ros.h"
-#include "turtlesim/Pose.h"
-#include "turtlesim/Spawn.h"
-#include "turtlesim/Kill.h"
-#include "turtlesim/TeleportAbsolute.h"
+
 #include "geometry_msgs/Twist.h"
 
+#include "turtlesim/Pose.h"
+#include "turtlesim/Spawn.h"
+
 #include <iostream>
-#include <cmath>
-
-#include <unistd.h>
-
 #define NEW_TURTLE "turtle_2"
 
-ros::Publisher tpub;
 
 bool check_input(int input, int size) {
 	return input > 0 and input <= size;
