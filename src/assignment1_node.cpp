@@ -6,7 +6,6 @@
 #include "turtlesim/Spawn.h"
 
 #include <iostream>
-#define NEW_TURTLE "turtle_2"
 
 
 bool check_input(int input, int size) {
@@ -14,7 +13,7 @@ bool check_input(int input, int size) {
 }
 
 int main(int argc, char **argv) {
-	std::vector <std::string>turtles  = {"turtle_1", "turtle_2"};
+	const std::vector <std::string>turtles  = {"turtle1", "turtle2"};
 
 	ros::init(argc, argv, "turtle_subscriber");  
 	ros::NodeHandle handle;
@@ -24,24 +23,25 @@ int main(int argc, char **argv) {
 	t2spawn.request.x = 2.0;
 	t2spawn.request.y = 1.0;
 	t2spawn.request.theta = 0.0;
-	t2spawn.request.name = NEW_TURTLE;
+	t2spawn.request.name = turtles[1];
 
 	sclient.call(t2spawn);
 
-	while (true) {
-		int turtle = -1;
+	while (ros::ok) {
+		int input = -1;
 
-		while (!check_input(turtle, turtles.size())) {
+		while (!check_input(input, turtles.size())) {
 			std::cout << "Insert the number of the turtle you want to control:" << std::endl;
 			for (int i = 0; i < turtles.size(); ++i) {
 			 	std::cout << i+1 << ". " << turtles[i] << std::endl;;
 			}
 			std::cout << ">> "; 
-			std::cin >> turtle;
-			if (!check_input(turtle, turtles.size())) {
+			std::cin >> input;
+			if (!check_input(input, turtles.size())) {
 				std::cout << "Invalid turtle number, try again..." << std::endl;
 			}
 		}
+		const int turtle = input - 1;
 
 		float x, y, theta; 
 		std::cout << "Acquiring the velocities\n" << std::endl;
