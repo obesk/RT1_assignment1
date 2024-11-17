@@ -13,6 +13,7 @@ bool check_input(int input, int size) {
 }
 
 int main(int argc, char **argv) {
+	const ros::Duration turtle_moving_time(1, 0);
 	const std::vector <std::string>turtles  = {"turtle1", "turtle2"};
 
 	ros::init(argc, argv, "turtle_subscriber");  
@@ -52,8 +53,24 @@ int main(int argc, char **argv) {
 		std::cout << "Insert the angular velocity: ";
 		std::cin >> theta;
 		
-		std::cout << "acquired velocities: " << x << y << theta << std::endl;
-		sleep(1);
+		geometry_msgs::Twist t;
+		t.linear.x = x;
+		t.linear.y = y;
+		t.angular.z = theta;
+
+		ros::Publisher tpub = handle.advertise<geometry_msgs::Twist>("/" + turtles[turtle] + "/cmd_vel", 10);
+
+		const ros::Time start_time = ros::Time::now();
+
+		ros::Rate loop_rate(10);
+		while (ros::ok() && ros::Time::now() - start_time < turtle_moving_time) {
+			tpub.publish(t);
+			ros::spinOnce();
+			loop_rate.sleep();
+		}
+
+		tpub.publish(geometry_msgs::Twist{});
+		ros::spinOnce();
 	}
 
 	return 0;
