@@ -4,6 +4,11 @@
 #include "geometry_msgs/Twist.h"
 #include "std_msgs/Float32.h"
 
+#include <algorithm>
+
+#define ALLOWED_DISTANCE 1.0
+#define BOARD_SIZE 11.0
+
 ros::Publisher pub1;
 ros::Publisher pub2;
 ros::Publisher distance_pub;
@@ -19,6 +24,10 @@ struct TurtleState {
     const double distance(const TurtleState t) const {
         return std::sqrt(std::pow(this->x - t.x, 2) + std::pow(this->y - t.y, 2));
     };
+
+    const double minDistanceFromBorders() {
+        return std::min({BOARD_SIZE - this->x, this->x, BOARD_SIZE - this->y, this->y});
+    }
 
 };
 
@@ -70,7 +79,25 @@ int main (int argc, char **argv){
 
     while(ros::ok()){
         const double distance = pos1.distance(pos2);
-        if (distance < 1) {
+
+        const double min_dist_1 = pos1.minDistanceFromBorders();
+
+        if (min_dist_1 <= ALLOWED_DISTANCE) {
+            if (oldpos1.minDistanceFromBorders() > min_dist_1) {
+                pub1.publish(stop_msg);
+                std::cout << "turtle 1 getting too close to the borders, stopping it ..." << std::endl;
+            }
+        }
+        const double min_dist_2 = pos2.minDistanceFromBorders();
+        if (min_dist_2 <= ALLOWED_DISTANCE) {
+            if (oldpos2.minDistanceFromBorders() > min_dist_2) {
+                pub2.publish(stop_msg);
+                std::cout << "turtle 2 getting too close to the borders, stopping it ..." << std::endl;
+            }
+        }
+
+
+        if (distance < ALLOWED_DISTANCE) {
             const double old_distance = oldpos1.distance(oldpos2);
             if(old_distance > distance) {
                 pub1.publish(stop_msg);
