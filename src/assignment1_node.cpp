@@ -13,20 +13,30 @@ bool check_input(int input, int size) {
 }
 
 int main(int argc, char **argv) {
+	const std::array <std::string, 2>turtles  = {"turtle1", "turtle2"};
 	const ros::Duration turtle_moving_time(1, 0);
-	const std::vector <std::string>turtles  = {"turtle1", "turtle2"};
 
 	ros::init(argc, argv, "turtle_subscriber");  
 	ros::NodeHandle handle;
 
-	ros::ServiceClient sclient = handle.serviceClient<turtlesim::Spawn>("/spawn");
-	turtlesim::Spawn t2spawn;
-	t2spawn.request.x = 2.0;
-	t2spawn.request.y = 1.0;
-	t2spawn.request.theta = 0.0;
-	t2spawn.request.name = turtles[1];
+	std::array <ros::Publisher, turtles.size()> publishers;
+	int i = 0; 
+	for (std::string t : turtles) {
+		publishers[i] = handle.advertise<geometry_msgs::Twist>("/" + t + "/cmd_vel", 10);
 
-	sclient.call(t2spawn);
+		ros::ServiceClient sclient = handle.serviceClient<turtlesim::Spawn>("/spawn");
+		sclient.waitForExistence();
+
+		//TODO: spawn them in different places
+		turtlesim::Spawn t2spawn;
+		t2spawn.request.x = 2.0;
+		t2spawn.request.y = 1.0;
+		t2spawn.request.theta = 0.0;
+		t2spawn.request.name = turtles[1];
+		sclient.call(t2spawn);
+
+		++i;
+	}
 
 	while (ros::ok) {
 		int input = -1;
@@ -61,23 +71,22 @@ int main(int argc, char **argv) {
 		std::cout << "Insert the angular velocity: ";
 		std::cin >> theta;
 		
-		geometry_msgs::Twist t;
+		geometry_msgs::Twist t{};
 		t.linear.x = x;
 		t.linear.y = y;
 		t.angular.z = theta;
 
-		ros::Publisher tpub = handle.advertise<geometry_msgs::Twist>("/" + turtles[turtle] + "/cmd_vel", 10);
-
 		const ros::Time start_time = ros::Time::now();
 
+		ros::spinOnce();
 		ros::Rate loop_rate(10);
-		while (ros::ok() && ros::Time::now() - start_time < turtle_moving_time) {
-			tpub.publish(t);
+		publishers[turtle].publish(t);
+		while (ros::ok() && (ros::Time::now() - start_time) < turtle_moving_time) {
 			ros::spinOnce();
 			loop_rate.sleep();
 		}
 
-		tpub.publish(geometry_msgs::Twist{});
+		publishers[turtle].publish(geometry_msgs::Twist{});
 		ros::spinOnce();
 	}
 
