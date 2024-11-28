@@ -1,11 +1,13 @@
+#include "config.h"
+
 #include "ros/ros.h"
-
 #include "geometry_msgs/Twist.h"
-
 #include "turtlesim/Pose.h"
 #include "turtlesim/Spawn.h"
 
+#include <cstdlib>
 #include <iostream>
+#include <ctime>
 
 
 bool check_input(int input, int size) {
@@ -13,29 +15,36 @@ bool check_input(int input, int size) {
 }
 
 int main(int argc, char **argv) {
-	const std::array <std::string, 2>turtles  = {"turtle1", "turtle2"};
-	const ros::Duration turtle_moving_time(1, 0);
+	std::srand(std::time(NULL));
 
+	if (N_TURTLES < 2) {
+		ROS_ERROR("there should be at least 2 turtles");
+		exit(1);
+	}
+
+	const ros::Duration turtle_moving_time(1, 0);
 	ros::init(argc, argv, "turtle_subscriber");  
 	ros::NodeHandle handle;
 
+	std::array <std::string, N_TURTLES>turtles;
 	std::array <ros::Publisher, turtles.size()> publishers;
-	int i = 0; 
-	for (std::string t : turtles) {
-		publishers[i] = handle.advertise<geometry_msgs::Twist>("/" + t + "/cmd_vel", 10);
 
-		ros::ServiceClient sclient = handle.serviceClient<turtlesim::Spawn>("/spawn");
-		sclient.waitForExistence();
+	ros::ServiceClient sclient = handle.serviceClient<turtlesim::Spawn>("/spawn");
+	sclient.waitForExistence();
 
-		//TODO: spawn them in different places
-		turtlesim::Spawn t2spawn;
-		t2spawn.request.x = 2.0;
-		t2spawn.request.y = 1.0;
-		t2spawn.request.theta = 0.0;
-		t2spawn.request.name = turtles[1];
-		sclient.call(t2spawn);
+	for (int i = 0; i < N_TURTLES; ++i) {
+		turtles[i] = "turtle" + std::to_string(i+1);
 
-		++i;
+		if (i != 0) {
+			turtlesim::Spawn tspawn;
+			tspawn.request.x = std::rand() % static_cast<int>(BOARD_SIZE - ALLOWED_DISTANCE + 1) + ALLOWED_DISTANCE;
+			tspawn.request.y = std::rand() % static_cast<int>(BOARD_SIZE - ALLOWED_DISTANCE - 1) + ALLOWED_DISTANCE + 1;
+			tspawn.request.theta = 0.0;
+			tspawn.request.name = turtles[i];
+			std::cout << "spawning turtle " << i << std::endl;
+			sclient.call(tspawn);
+		}
+		publishers[i] = handle.advertise<geometry_msgs::Twist>("/" + turtles[i] + "/cmd_vel", 10);
 	}
 
 	while (ros::ok) {
