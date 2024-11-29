@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
-	const ros::Duration turtle_moving_time(1, 0);
+	const ros::Duration turtle_moving_time(TURTLE_MOVING_TIME, 0);
 	ros::init(argc, argv, "turtle_subscriber");  
 	ros::NodeHandle handle;
 
