@@ -37,12 +37,12 @@ int main(int argc, char **argv) {
 
 		if (i != 0) {
 			turtlesim::Spawn tspawn;
-			tspawn.request.x = std::rand() % static_cast<int>(BOARD_SIZE - ALLOWED_DISTANCE + 1) + ALLOWED_DISTANCE;
-			tspawn.request.y = std::rand() % static_cast<int>(BOARD_SIZE - ALLOWED_DISTANCE - 1) + ALLOWED_DISTANCE + 1;
+			tspawn.request.x = std::rand() % static_cast<int>(BOARD_SIZE - ALLOWED_DISTANCE) + ALLOWED_DISTANCE;
+			tspawn.request.y = std::rand() % static_cast<int>(BOARD_SIZE - ALLOWED_DISTANCE) + ALLOWED_DISTANCE;
 			tspawn.request.theta = 0.0;
 			tspawn.request.name = turtles[i];
-			std::cout << "spawning turtle " << i << std::endl;
 			sclient.call(tspawn);
+			ROS_INFO("Spawned turtle%d at coordinates x:%f, y%f", i+1, tspawn.request.x, tspawn.request.y);
 		}
 		publishers[i] = handle.advertise<geometry_msgs::Twist>("/" + turtles[i] + "/cmd_vel", 10);
 	}

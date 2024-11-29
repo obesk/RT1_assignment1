@@ -69,11 +69,10 @@ int main (int argc, char **argv){
 
             //Preventig border collision
             const double min_distance = positions[i].minDistanceFromBorders();
-            //TODO: change couts
             if (min_distance <= ALLOWED_DISTANCE) {
                 const double old_min_distance = old_positions[i].minDistanceFromBorders();
                 if (old_min_distance > min_distance) {
-                    std::cout << "turtle" << i + 1 << " getting too close to the borders, stopping it ..." << std::endl;
+                    ROS_WARN("turtle%d getting too close to the borders, stopping it ...", i + 1);
                     publishers[i].publish(stop_msg);
                 }
             }
@@ -89,7 +88,7 @@ int main (int argc, char **argv){
                     const double old_min_distance = old_positions[i].distance(old_positions[j]);
                     if(old_min_distance > min_distance) {
                         publishers[i].publish(stop_msg);
-                        std::cout << "turtle" << i + 1 << " getting too close to turtle" << j << " stopping it ..." << std::endl;
+                        ROS_WARN("turtle%d getting too close to turtle%d stopping it ...", i+1, j+1);
                     }
                 }
             }
